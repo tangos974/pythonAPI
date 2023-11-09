@@ -1,7 +1,15 @@
 from fastapi import FastAPI
-from small_python_api.users import users_db
-#J'ai préféré mettre la BDD dans un autre fichier users.py
-#Je trouve ça légèrement plus réaliste
+from typing import Optional
+from pydantic import BaseModel
+from users import users_db
+#J'ai préféré mettre users_db dans un autre fichier users.py
+
+
+class User(BaseModel):
+    userid: Optional[int] = None
+    name: str
+    subscription: str
+
 
 api = FastAPI(
     title='My API'
@@ -47,3 +55,46 @@ def get_user_subscritpion(userid: int):
     except:
         return{}
     
+
+#POST le nouvel utilisateur, ne prend pas d'argument ID
+#car celui-ci est assigné automatiquement
+@api.post('/users')
+def post_user(user: User):
+    new_id = max(users_db, key=lambda u: u.get('user_id'))['user_id']
+    new_user = {
+        'user_id': new_id + 1,
+        'name': user.name,
+        'subscription': user.subscription
+    }
+    users_db.append(new_user)
+
+    return new_user
+
+#PUT d'un utilisateur déjà existant, on met à jour son
+#nom et sa souscription
+@api.put('/users/{userid:int}')
+def put_user(user: User, userid: int):
+    try:
+        old_user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
+        users_db.remove(old_user)
+
+        old_user['name'] = user.name
+        old_user['subscription'] = user.subscription
+
+        users_db.append(old_user)
+        return old_user
+
+    except IndexError:
+        return{}
+
+@api.delete('/users/{userid:int}')
+def delete_user(user: User, userid: int):
+    try:
+        old_user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
+        users_db.remove(old_user)
+        return {
+            'userid': userid,
+            'deleted': True
+            }
+    except IndexError:
+        return{}
