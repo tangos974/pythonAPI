@@ -21,36 +21,29 @@ def get_all_users():
 #Sinon, ou si user id n'est pas dans BDD, renvoie dic vide
 @api.get('/users/{userid:int}')
 def get_user(userid: int):
-    for user in users_db:
-        if user['user_id'] == userid:
-            return user
-    return {} 
+    try:
+        user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
+        return user
+    except IndexError:
+        return {}
 
 #Renvoie nom correspondant à l'userid
 #Si userid pas utilisé, retourne dic vide
 @api.get('/users/{userid:int}/name')
 def get_username(userid: int):
-    for user in users_db:
-        if user['user_id'] == userid:
-            return user['name']
-    return {} 
-
-#Autre option plus rapide, mais moins robuste
-#car marche ssi la bdd (ici liste de dics python)
-#est dans l'ordre:
-"""
-@api.get('/users/{userid:int}/name')
-def get_username(userid: int):
-    if 1 <= userid <= len(users_db):
-        return users_db[userid - 1]['name']
-    return {}
-"""
+    try:
+        user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
+        return {'name': user['name']}
+    except IndexError:
+        return {}
 
 #Renvoie souscription correspondant à l'userid
 #Si userid pas utilisé, retourne dic vide
 @api.get('/users/{userid:int}/subscription')
 def get_user_subscritpion(userid: int):
-    for user in users_db:
-        if user['user_id'] == userid:
-            return user['subscription']
-    return {} 
+    try:
+        user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
+        return {'subscription': user['subscription']}
+    except:
+        return{}
+    
