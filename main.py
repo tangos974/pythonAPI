@@ -6,13 +6,17 @@ from users import users_db
 
 
 class User(BaseModel):
+    """Un utilisateur
+    """
     userid: Optional[int] = None
     name: str
     subscription: str
 
 
 api = FastAPI(
-    title='My API'
+    title='My API',
+    description="My own API powered by FastAPI.",
+    version="1.0",
 )
 
 #Message de bienvenue
@@ -29,37 +33,46 @@ def get_all_users():
 #Sinon, ou si user id n'est pas dans BDD, renvoie dic vide
 @api.get('/users/{userid:int}')
 def get_user(userid: int):
+    """
+    Renvoie toutes les données d'un utilisateur ssi userid est fourni
+    sinon, ou si user id n'est pas dans BDD, renvoie dictionnaire vide
+    """
     try:
         user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
         return user
     except IndexError:
         return {}
 
-#Renvoie nom correspondant à l'userid
-#Si userid pas utilisé, retourne dic vide
 @api.get('/users/{userid:int}/name')
 def get_username(userid: int):
+    """
+    Renvoie nom correspondant à l'userid
+    Si userid pas utilisé, retourne dic vide
+    """
     try:
         user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
         return {'name': user['name']}
     except IndexError:
         return {}
 
-#Renvoie souscription correspondant à l'userid
-#Si userid pas utilisé, retourne dic vide
 @api.get('/users/{userid:int}/subscription')
 def get_user_subscritpion(userid: int):
+    """
+    Renvoie souscription correspondant à l'userid
+    Si userid pas utilisé, retourne dic vide
+    """
     try:
         user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
         return {'subscription': user['subscription']}
     except:
         return{}
     
-
-#POST le nouvel utilisateur, ne prend pas d'argument ID
-#car celui-ci est assigné automatiquement
 @api.post('/users')
 def post_user(user: User):
+    """
+    POST le nouvel utilisateur, lui assignant automatiquement
+    un nouvel userid
+    """
     new_id = max(users_db, key=lambda u: u.get('user_id'))['user_id']
     new_user = {
         'user_id': new_id + 1,
@@ -70,10 +83,11 @@ def post_user(user: User):
 
     return new_user
 
-#PUT d'un utilisateur déjà existant, on met à jour son
-#nom et sa souscription
 @api.put('/users/{userid:int}')
 def put_user(user: User, userid: int):
+    """
+    Change le nom et la souscription d'un utilisateur déjà existant
+    """
     try:
         old_user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
         users_db.remove(old_user)
@@ -89,6 +103,9 @@ def put_user(user: User, userid: int):
 
 @api.delete('/users/{userid:int}')
 def delete_user(user: User, userid: int):
+    """
+    Supprime un utilisateur
+    """
     try:
         old_user = list(filter(lambda x: x.get('user_id') == userid, users_db))[0]
         users_db.remove(old_user)
