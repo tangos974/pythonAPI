@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from typing import Optional
 from pydantic import BaseModel
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import datetime
 from users import users_db
 #J'ai préféré mettre users_db dans un autre fichier users.py
 
@@ -12,12 +15,27 @@ class User(BaseModel):
     name: str
     subscription: str
 
+class MyException(Exception):
+    def __init__(self,
+                 name : str,
+                 date: str):
+        self.name = name
+        self.date = date
+
 
 api = FastAPI(
     title='My API',
     description="My own API powered by FastAPI.",
     version="1.0",
 )
+
+responses = {
+    200: {"description": "OK"},
+    404: {"description": "Item not found"},
+    302: {"description": "The item was moved"},
+    403: {"description": "Not enough privileges"},
+}
+
 
 #Message de bienvenue
 @api.get('/')
